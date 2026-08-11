@@ -39,7 +39,7 @@ void main()
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
-
+    //Куда подключаемся
 	iResult = getaddrinfo("127.0.0.1", PORT, &hints, &result);
 	if (iResult != 0)
 	{
