@@ -39,7 +39,7 @@ void main()
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
-    //Куда подключаемся
+	//Куда подключаемся
 	iResult = getaddrinfo("127.0.0.1", PORT, &hints, &result);
 	if (iResult != 0)
 	{
@@ -72,11 +72,11 @@ void main()
 		return;
 	}
 	//5) Отправка и получение данных:
-	CHAR sendbuffer[BUFFER_LENGTH] = "Hello Server";
-	CHAR recvbuffer[BUFFER_LENGTH] = {};
+		CHAR sendbuffer[BUFFER_LENGTH] = "Hello Server";
 
 	do
 	{
+		CHAR recvbuffer[BUFFER_LENGTH] = {};
 		iResult = send(connect_socket, sendbuffer, strlen(sendbuffer), 0);
 		if (iResult == SOCKET_ERROR)
 		{
@@ -91,13 +91,16 @@ void main()
 
 		//do
 		//{
-			iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
-			if (iResult > 0)cout << recvbuffer << "(" << iResult << "Bytes)" << endl;
-			else if (result == 0) cout << "Connection closet" << endl;
-			else cout << FormatLastError(WSAGetLastError(), szError) << endl; //cout << "Reseive failed:\t" << WSAGetLastError() << endl;
+		iResult = recv(connect_socket, recvbuffer, BUFFER_LENGTH, 0);
+		if (iResult > 0)cout << recvbuffer << "(" << iResult << "Bytes)" << endl;
+		else if (result == 0) cout << "Connection closet" << endl;
+		else cout << FormatLastError(WSAGetLastError(), szError) << endl; //cout << "Reseive failed:\t" << WSAGetLastError() << endl;
 		//} while (iResult > 0);
-		cin.getline(sendbuffer,BUFFER_LENGTH);
-	} while (strcmp(sendbuffer,"exit") != 0);
+		ZeroMemory(sendbuffer, BUFFER_LENGTH);
+		SetConsoleCP(1251); //смена кодировки для вывода на русском языку
+		cin.getline(sendbuffer, BUFFER_LENGTH);
+		SetConsoleCP(866); //возврат к исходной кодировке
+	} while (strcmp(sendbuffer, "exit") != 0);
 
 	iResult = shutdown(connect_socket, SD_BOTH);
 	if (iResult == SOCKET_ERROR)
