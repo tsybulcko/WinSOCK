@@ -10,6 +10,7 @@
 #include <iphlpapi.h>
 
 #include <FormatLastError.h>
+#include <Messages.h>
 using namespace std;
 
 #pragma comment(lib, "WS2_32.lib")
@@ -17,7 +18,7 @@ using namespace std;
 
 #define PORT  "27015"
 #define BUFFER_LENGTH  1500
-#define MAX_CONNECTIONS  5
+#define MAX_CONNECTIONS  3
 
 SOCKET sockets[MAX_CONNECTIONS] = {};
 DWORD dwThreadIDs[MAX_CONNECTIONS] = {};
@@ -129,12 +130,27 @@ void main()
 			(
              NULL, // Security attributes
 				0, // Stack size
-				(LPTHREAD_START_ROUTINE)ClientHandle, // Указатель на функцию,
+				(LPTHREAD_START_ROUTINE)ClientHandle, // Указатель на функцию, которая будет выполнять
 				(LPVOID)sockets[i],
 				0,
 				&dwThreadIDs[i]
 			);
 			i++;
+		}
+		else
+		{
+			CHAR recv_buffer[BUFFER_LENGTH] = {};
+			iResult = recv(client_socket, recv_buffer, BUFFER_LENGTH, NULL);
+			/*if (iResult != 0)
+			{
+				FormatLastError(WSAGetLastError(), szError);
+				cout << szError << endl;
+			}
+			else*/ cout << recv_buffer << endl;
+			//CHAR szDeclainMessage[] = ;
+			iResult = send(client_socket, DECLINE_MESSAGE, strlen(DECLINE_MESSAGE), NULL);
+			shutdown(client_socket, SD_BOTH);
+			closesocket(client_socket);
 		}
 
 	} while (true);
@@ -152,10 +168,10 @@ VOID ClientHandle(SOCKET client_socket)
 	client_address.sin_family = AF_INET;
 	INT namelen = sizeof(client_address);
 	getpeername(client_socket, (sockaddr*)&client_address, &namelen);
-	CHAR szName[32] = {};
-	sprintf(szName, "%s:%d\t", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
+	CHAR sz_client_address[32] = {};
+	sprintf(sz_client_address, "%s:%d- ", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
 
-	cout << "Client connected:\t" << szName << "\tSOCKET:\t" << client_socket << endl;
+	cout << "Client connected:\t" << sz_client_address << "\tSOCKET:\t" << client_socket << endl;
 	INT iResult = 0;
 	DWORD dwError = 0;
 	CHAR szError[256] = {};
@@ -170,7 +186,7 @@ VOID ClientHandle(SOCKET client_socket)
 		dwError = WSAGetLastError();
 		if (iResult > 0)
 		{
-			cout << recvbuffer << "(" << strlen(recvbuffer) << " Bytes)" << endl;
+			cout << sz_client_address << recvbuffer << "(" << strlen(recvbuffer) << " Bytes)" << endl;
 			iSendResult = send(client_socket, recvbuffer, strlen(recvbuffer), 0);
 			dwError = WSAGetLastError();
 			if (iSendResult == SOCKET_ERROR)
